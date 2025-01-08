@@ -5,7 +5,7 @@ function findAdventCoin(secretKey) {
     while (true) {
         const hashInput = secretKey + number;
         const hashResult = crypto.createHash('md5').update(hashInput).digest('hex');
-        if (hashResult.startsWith('00000')) {
+        if (hashResult.startsWith('000000')) {
             return number;
         }
         number++;
