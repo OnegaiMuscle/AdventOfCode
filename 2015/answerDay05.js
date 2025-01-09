@@ -42,7 +42,8 @@ function countNiceStrings(strings) {
   return niceCount;
 }
 
-
-
+const fs = require('fs');
+const data = fs.readFileSync('inputDay05.txt', 'utf8').trim();
+console.log(data)
 const niceCount = countNiceStrings(strings);
 console.log(`Number of nice strings: ${niceCount}`);
