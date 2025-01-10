@@ -1,70 +1,69 @@
 const fs = require('fs');
 
-function parseInstruction(instruction) {
-    const parts = instruction.split(' ');
-    if (parts.length === 3) {
-        return { op: 'ASSIGN', src1: parts[0], dest: parts[2] };
-    } else if (parts.length === 4) {
-        return { op: 'NOT', src1: parts[1], dest: parts[3] };
-    } else if (parts.length === 5) {
-        return { op: parts[1], src1: parts[0], src2: parts[2], dest: parts[4] };
-    }
+let wires = {};
+
+function Wire(instruction) {
+    this.calculate = this.generateValueGetter(instruction);
 }
 
-function getValue(wires, src) {
-    if (!isNaN(src)) {
-        return parseInt(src, 10);
+Wire.prototype.getValue = function() {
+    if (this.value === undefined) {
+        this.value = this.checkRange(this.calculate());
     }
-    if (!(src in wires)) {
-        throw new Error(`Wire ${src} has no signal`);
+    return this.value;
+};
+
+Wire.prototype.checkRange = function(i) {
+    const n = 65536;
+    return ((i % n) + n) % n;
+};
+
+Wire.prototype.generateValueGetter = function(instruction) {
+    let assignMatch, opMatch;
+
+    if (assignMatch = /^(NOT )?([0-9]+|[a-z]+)$/.exec(instruction)) {
+        return function() {
+            let value = parseValue(assignMatch[2]);
+            if (assignMatch[1]) value = ~value;
+            return value;
+        };
+    } else if (opMatch = /^([a-z]+|[0-9]+) (AND|OR|LSHIFT|RSHIFT) ([a-z]+|[0-9]+)$/.exec(instruction)) {
+        const opCode = this.ops[opMatch[2]];
+        return function() {
+            return eval(parseValue(opMatch[1]) + ' ' + opCode + ' ' + parseValue(opMatch[3]));
+        };
     }
-    return wires[src];
+};
+
+Wire.prototype.ops = {
+    'AND': '&',
+    'OR': '|',
+    'LSHIFT': '<<',
+    'RSHIFT': '>>',
+};
+
+function parseValue(key) {
+    const i = parseInt(key);
+    return !isNaN(i) ? i : wires[key].getValue();
 }
 
-function evaluateCircuit(instructions, override = {}) {
-    const wires = { ...override };
-    const pending = instructions.map(parseInstruction);
+fs.readFile('inputDay07.txt', 'utf8', (err, data) => {
+    if (err) throw err;
 
-    while (pending.length > 0) {
-        for (let i = 0; i < pending.length; i++) {
-            const { op, src1, src2, dest } = pending[i];
-            try {
-                switch (op) {
-                    case 'ASSIGN':
-                        wires[dest] = getValue(wires, src1);
-                        break;
-                    case 'NOT':
-                        wires[dest] = ~getValue(wires, src1) & 0xFFFF;
-                        break;
-                    case 'AND':
-                        wires[dest] = getValue(wires, src1) & getValue(wires, src2);
-                        break;
-                    case 'OR':
-                        wires[dest] = getValue(wires, src1) | getValue(wires, src2);
-                        break;
-                    case 'LSHIFT':
-                        wires[dest] = getValue(wires, src1) << getValue(wires, src2);
-                        break;
-                    case 'RSHIFT':
-                        wires[dest] = getValue(wires, src1) >> getValue(wires, src2);
-                        break;
-                }
-                pending.splice(i, 1);
-                i--;
-            } catch (e) {
-                // If there's an error, it means the wire's value is not ready yet
-            }
+    data.split('\n').forEach(function(item) {
+        let match;
+        if (match = /(.*) -> ([a-z]+)/.exec(item)) {
+            wires[match[2]] = new Wire(match[1]);
         }
-    }
+    });
 
-    return wires;
-}
+    const partOne = wires.a.getValue();
+    console.log('Part One:', partOne);
 
-const instructions = fs.readFileSync('inputDay07.txt', 'utf-8').trim().split('\n');
-const initialWires = evaluateCircuit(instructions);
-const signalA = initialWires['a'];
+    Object.keys(wires).forEach(function(key) {
+        wires[key].value = undefined;
+    });
+    wires.b.value = partOne;
 
-const override = { b: signalA };
-const newWires = evaluateCircuit(instructions, override);
-
-console.log(newWires['a']); // Output: new signal for wire 'a'
+    console.log('Part Two:', wires.a.getValue());
+});
