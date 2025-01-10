@@ -57,4 +57,4 @@ for (let instruction of instructions) {
   applyInstruction(grid, instruction);
 }
 
-console.log(calculateTotalBrightness(grid)); // Output: 2001996
+console.log(calculateTotalBrightness(grid));
