@@ -1,7 +1,7 @@
 function createGrid(size) {
   const grid = [];
   for (let i = 0; i < size; i++) {
-      grid.push(new Array(size).fill(false));
+      grid.push(new Array(size).fill(0));
   }
   return grid;
 }
@@ -26,28 +26,29 @@ function applyInstruction(grid, instruction) {
   for (let i = x1; i <= x2; i++) {
       for (let j = y1; j <= y2; j++) {
           if (action === 'on') {
-              grid[i][j] = true;
+              grid[i][j] += 1;
           } else if (action === 'off') {
-              grid[i][j] = false;
+              grid[i][j] = Math.max(0, grid[i][j] - 1);
           } else if (action === 'toggle') {
-              grid[i][j] = !grid[i][j];
+              grid[i][j] += 2;
           }
       }
   }
 }
 
-function countLights(grid) {
-  let count = 0;
+function calculateTotalBrightness(grid) {
+  let totalBrightness = 0;
   for (let row of grid) {
-      for (let light of row) {
-          if (light) count++;
+      for (let brightness of row) {
+          totalBrightness += brightness;
       }
   }
-  return count;
+  return totalBrightness;
 }
 
 const fs = require('fs');
 const instructions = fs.readFileSync('inputDay06.txt', 'utf8').trim().split('\n');
+
 
 
 const grid = createGrid(1000);
@@ -56,4 +57,4 @@ for (let instruction of instructions) {
   applyInstruction(grid, instruction);
 }
 
-console.log(countLights(grid)); 
+console.log(calculateTotalBrightness(grid)); // Output: 2001996
