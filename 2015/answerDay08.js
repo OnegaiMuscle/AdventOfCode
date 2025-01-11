@@ -18,7 +18,6 @@ function calculateDifference(filePath) {
     return codeChars - memoryChars;
 }
 
-// Example usage
 const filePath = 'inputDay08.txt';
 const difference = calculateDifference(filePath);
 console.log(`The difference is: ${difference}`);
