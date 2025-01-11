@@ -31,3 +31,6 @@ const input = '1113122113';
 const iterations = 40;
 const result = applyLookAndSay(input, iterations);
 console.log(`The length of the result after ${iterations} iterations is: ${result.length}`);
+const iterationss = 50;
+const resultbis = applyLookAndSay(input, iterationss);
+console.log(`The length of the result after ${iterations} iterations is: ${resultbis.length}`);
