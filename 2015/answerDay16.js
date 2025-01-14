@@ -38,7 +38,7 @@ function findMatchingAuntSue(aunts, analysisResults) {
 }
 
 // Example usage:
-const filePath = 'inputDay17.txt'; // Replace with the path to your text file
+const filePath = 'inputDay16.txt'; // Replace with the path to your text file
 const aunts = parseAuntSueData(filePath);
 const analysisResults = {
     children: 3,
