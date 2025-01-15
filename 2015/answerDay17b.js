@@ -31,8 +31,7 @@ function findMinContainers(containers, target) {
     return { minContainers: result.usedContainers, ways: result.count };
 }
 
-// Example usage:
-const filePath = 'inputDay17.txt'; 
+const filePath = 'inputDay17.txt';
 const containers = parseContainerData(filePath);
 const target = 150;
 const { minContainers, ways } = findMinContainers(containers, target);
