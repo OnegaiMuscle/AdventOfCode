@@ -17,42 +17,35 @@ function parseInput(filePath) {
     return { replacements, molecule };
 }
 
-function generateMolecules(molecule, replacements) {
-    const molecules = new Set();
-
-    replacements.forEach(({ from, to }) => {
-        let index = molecule.indexOf(from);
-        while (index !== -1) {
-            const newMolecule = molecule.slice(0, index) + to + molecule.slice(index + from.length);
-            molecules.add(newMolecule);
-            index = molecule.indexOf(from, index + 1);
-        }
-    });
-
-    return molecules;
+function reverseReplacements(replacements) {
+    return replacements.map(({ from, to }) => ({ from: to, to: from }));
 }
 
 function findFewestSteps(replacements, targetMolecule) {
-    const queue = [{ molecule: 'e', steps: 0 }];
-    const visited = new Set(['e']);
+    const reversedReplacements = reverseReplacements(replacements);
+    const memo = new Map();
 
-    while (queue.length > 0) {
-        const { molecule, steps } = queue.shift();
+    function dfs(molecule) {
+        if (molecule === 'e') return 0;
+        if (memo.has(molecule)) return memo.get(molecule);
 
-        if (molecule === targetMolecule) {
-            return steps;
+        let minSteps = Infinity;
+        for (const { from, to } of reversedReplacements) {
+            const index = molecule.indexOf(from);
+            if (index !== -1) {
+                const newMolecule = molecule.slice(0, index) + to + molecule.slice(index + from.length);
+                const steps = dfs(newMolecule);
+                if (steps !== Infinity) {
+                    minSteps = Math.min(minSteps, steps + 1);
+                }
+            }
         }
 
-        const nextMolecules = generateMolecules(molecule, replacements);
-        nextMolecules.forEach(nextMolecule => {
-            if (!visited.has(nextMolecule)) {
-                visited.add(nextMolecule);
-                queue.push({ molecule: nextMolecule, steps: steps + 1 });
-            }
-        });
+        memo.set(molecule, minSteps);
+        return minSteps;
     }
 
-    return -1; // If no solution is found
+    return dfs(targetMolecule);
 }
 
 // Example usage:
