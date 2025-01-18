@@ -45,7 +45,7 @@ function findIdealConfiguration(weights) {
 }
 
 // Example usage:
-const filePath = '.txt';
+const filePath = 'inputDay24.txt';
 const weights = parseWeights(filePath);
 const quantumEntanglement = findIdealConfiguration(weights);
 console.log(`The quantum entanglement of the first group of packages in the ideal configuration is: ${quantumEntanglement}`);
