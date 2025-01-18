@@ -7,7 +7,7 @@ function simulateBattle(playerHP, playerMana, bossHP, bossDamage) {
       Recharge: { cost: 229, damage: 0, heal: 0, armor: 0, duration: 5, mana: 101 }
   };
 
-  let minManaSpent = Infinity;
+  let minManaSpent = 1000;
 
   function battle(playerHP, playerMana, bossHP, bossDamage, activeEffects, manaSpent, playerTurn) {
       if (manaSpent >= minManaSpent) return;
@@ -26,11 +26,15 @@ function simulateBattle(playerHP, playerMana, bossHP, bossDamage) {
       // Check if boss is defeated
       if (bossHP <= 0) {
           minManaSpent = Math.min(minManaSpent, manaSpent);
+          console.log(`Victory! Mana spent: ${manaSpent}`);
           return;
       }
 
       // Check if player is defeated
-      if (playerHP <= 0) return;
+      if (playerHP <= 0) {
+          console.log(`Defeat! Player HP: ${playerHP}`);
+          return;
+      }
 
       if (playerTurn) {
           for (let spell in spells) {
@@ -39,6 +43,7 @@ function simulateBattle(playerHP, playerMana, bossHP, bossDamage) {
                   if (spells[spell].duration > 0) {
                       newActiveEffects[spell] = { duration: spells[spell].duration };
                   }
+                  console.log(`Casting ${spell}. Player HP: ${playerHP}, Player Mana: ${playerMana}, Boss HP: ${bossHP}`);
                   battle(
                       playerHP + spells[spell].heal,
                       playerMana - spells[spell].cost,
@@ -52,6 +57,7 @@ function simulateBattle(playerHP, playerMana, bossHP, bossDamage) {
           }
       } else {
           playerHP -= Math.max(1, bossDamage - armor);
+          console.log(`Boss attacks. Player HP: ${playerHP}, Player Mana: ${playerMana}, Boss HP: ${bossHP}`);
           if (playerHP > 0) {
               battle(playerHP, playerMana, bossHP, bossDamage, activeEffects, manaSpent, true);
           }
