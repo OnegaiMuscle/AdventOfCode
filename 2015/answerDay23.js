@@ -10,46 +10,58 @@ function parseInstructions(filePath) {
 function runProgram(instructions) {
     let registers = { a: 0, b: 0 };
     let pointer = 0;
+    const memo = {};
 
-    while (pointer >= 0 && pointer < instructions.length) {
-        let [instruction, arg1, arg2] = instructions[pointer].split(' ');
+    function execute(pointer, registers) {
+        const key = `${pointer}-${registers.a}-${registers.b}`;
+        if (memo[key] !== undefined) return memo[key];
 
-        switch (instruction) {
-            case 'hlf':
-                registers[arg1] = Math.floor(registers[arg1] / 2);
-                pointer++;
-                break;
-            case 'tpl':
-                registers[arg1] *= 3;
-                pointer++;
-                break;
-            case 'inc':
-                registers[arg1]++;
-                pointer++;
-                break;
-            case 'jmp':
-                pointer += parseInt(arg1);
-                break;
-            case 'jie':
-                if (registers[arg1] % 2 === 0) {
-                    pointer += parseInt(arg2);
-                } else {
+        while (pointer >= 0 && pointer < instructions.length) {
+            let [instruction, arg1, arg2] = instructions[pointer].split(' ');
+
+            switch (instruction) {
+                case 'hlf':
+                    registers[arg1] = Math.floor(registers[arg1] / 2);
                     pointer++;
-                }
-                break;
-            case 'jio':
-                if (registers[arg1] === 1) {
-                    pointer += parseInt(arg2);
-                } else {
+                    break;
+                case 'tpl':
+                    registers[arg1] *= 3;
                     pointer++;
-                }
-                break;
-            default:
-                throw new Error(`Unknown instruction: ${instruction}`);
+                    break;
+                case 'inc':
+                    registers[arg1]++;
+                    pointer++;
+                    break;
+                case 'jmp':
+                    pointer += parseInt(arg1);
+                    break;
+                case 'jie':
+                    if (registers[arg1] % 2 === 0) {
+                        pointer += parseInt(arg2);
+                    } else {
+                        pointer++;
+                    }
+                    break;
+                case 'jio':
+                    if (registers[arg1] === 1) {
+                        pointer += parseInt(arg2);
+                    } else {
+                        pointer++;
+                    }
+                    break;
+                default:
+                    throw new Error(`Unknown instruction: ${instruction}`);
+            }
+
+            const result = execute(pointer, { ...registers });
+            memo[key] = result;
+            return result;
         }
+
+        return registers.b;
     }
 
-    return registers.b;
+    return execute(pointer, registers);
 }
 
 // Example usage:
