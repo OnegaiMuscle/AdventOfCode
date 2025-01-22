@@ -1,55 +1,20 @@
 const fs = require('fs');
 
-function parseInput(filePath) {
-    const data = fs.readFileSync(filePath, 'utf-8').trim().split('\n');
-    const replacements = [];
-    let molecule = '';
+let file = fs.readFileSync('inputDay19.txt', 'utf-8').split('\n').filter(line => line.trim() !== '');
+let target = file.pop();
+file.pop();
 
-    data.forEach(line => {
-        if (line.includes('=>')) {
-            const [from, to] = line.split(' => ');
-            replacements.push({ from, to });
-        } else if (line) {
-            molecule = line;
+let repl = file.map(x => x.split(' => '));
+
+let z = 0;
+while (target !== 'e') {
+    for (let r of repl) {
+        let pos = target.indexOf(r[1]);
+        if (pos !== -1) {
+            target = target.slice(0, pos) + r[0] + target.slice(pos + r[1].length);
+            z++;
         }
-    });
-
-    return { replacements, molecule };
-}
-
-function reverseReplacements(replacements) {
-    return replacements.map(({ from, to }) => ({ from: to, to: from }));
-}
-
-function findFewestSteps(replacements, targetMolecule) {
-    const reversedReplacements = reverseReplacements(replacements);
-    const memo = new Map();
-
-    function dfs(molecule) {
-        if (molecule === 'e') return 0;
-        if (memo.has(molecule)) return memo.get(molecule);
-
-        let minSteps = Infinity;
-        for (const { from, to } of reversedReplacements) {
-            const index = molecule.indexOf(from);
-            if (index !== -1) {
-                const newMolecule = molecule.slice(0, index) + to + molecule.slice(index + from.length);
-                const steps = dfs(newMolecule);
-                if (steps !== Infinity) {
-                    minSteps = Math.min(minSteps, steps + 1);
-                }
-            }
-        }
-
-        memo.set(molecule, minSteps);
-        return minSteps;
     }
-
-    return dfs(targetMolecule);
 }
 
-// Example usage:
-const filePath = 'inputDay19.txt'; // Replace with the path to your input file
-const { replacements, molecule } = parseInput(filePath);
-const fewestSteps = findFewestSteps(replacements, molecule);
-console.log('Fewest number of steps to make the medicine:', fewestSteps);
+console.log(z)
