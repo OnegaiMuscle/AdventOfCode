@@ -34,7 +34,33 @@ function sumOfSectorIDs(rooms) {
     }, 0);
 }
 
-// Exemple d'utilisation
 const rooms = parseData('inputDay04.txt');
 const totalSectorIDSum = sumOfSectorIDs(rooms);
 console.log(`Sum of sector IDs of real rooms: ${totalSectorIDSum}`);
+
+function decryptName(name, sectorID) {
+    return name.split('-').map(part => {
+        return part.split('').map(char => {
+            const charCode = char.charCodeAt(0);
+            const newCharCode = ((charCode - 97 + sectorID) % 26) + 97;
+            return String.fromCharCode(newCharCode);
+        }).join('');
+    }).join(' ');
+}
+
+function findNorthPoleRoom(rooms) {
+    for (const room of rooms) {
+        const match = room.match(/^([a-z-]+)-(\d+)\[([a-z]+)\]$/);
+        if (match) {
+            const [, name, sectorID] = match;
+            const decryptedName = decryptName(name, parseInt(sectorID, 10));
+            if (decryptedName.includes('northpole')) {
+                return sectorID;
+            }
+        }
+    }
+    return null;
+}
+
+const northPoleSectorID = findNorthPoleRoom(rooms);
+console.log(`Sector ID of the room where North Pole objects are stored: ${northPoleSectorID}`);
