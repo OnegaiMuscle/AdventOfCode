@@ -37,7 +37,48 @@ function countIPsSupportingTLS(ips) {
     return ips.filter(supportsTLS).length;
 }
 
-// Exemple d'utilisation
 const ips = parseData('inputDay07.txt');
 const count = countIPsSupportingTLS(ips);
 console.log(`Number of IPs supporting TLS: ${count}`);
+
+
+function hasABA(sequence) {
+    const abas = [];
+    for (let i = 0; i < sequence.length - 2; i++) {
+        if (sequence[i] === sequence[i + 2] && sequence[i] !== sequence[i + 1]) {
+            abas.push(sequence.slice(i, i + 3));
+        }
+    }
+    return abas;
+}
+
+function supportsSSL(ip) {
+    const parts = ip.split(/[\[\]]/);
+    const supernetSequences = [];
+    const hypernetSequences = [];
+
+    for (let i = 0; i < parts.length; i++) {
+        if (i % 2 === 0) {
+            supernetSequences.push(parts[i]);
+        } else {
+            hypernetSequences.push(parts[i]);
+        }
+    }
+
+    const abas = supernetSequences.flatMap(hasABA);
+    for (const aba of abas) {
+        const bab = aba[1] + aba[0] + aba[1];
+        if (hypernetSequences.some(seq => seq.includes(bab))) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function countIPsSupportingSSL(ips) {
+    return ips.filter(supportsSSL).length;
+}
+
+const countbis = countIPsSupportingSSL(ips);
+console.log(`Number of IPs supporting SSL: ${countbis}`);
