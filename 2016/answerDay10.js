@@ -1,77 +1,58 @@
 const fs = require('fs');
 
-function parseData(filePath) {
-    const data = fs.readFileSync(filePath, 'utf-8');
-    return data.trim().split('\n');
+function gi(reg, s) {
+    return s.match(reg).slice(1).map(Number);
 }
 
-function processInstructions(instructions) {
-    const bots = {};
-    const outputs = {};
-    const valueInstructions = [];
-    const botInstructions = [];
+function gm(reg, s) {
+    return s.match(reg).slice(1);
+}
 
-    instructions.forEach(instruction => {
-        if (instruction.startsWith('value')) {
-            valueInstructions.push(instruction);
-        } else {
-            botInstructions.push(instruction);
-        }
-    });
+const data = fs.readFileSync('inputDay10.txt', 'utf-8').trim().split('\n');
 
-    valueInstructions.forEach(instruction => {
-        const [, value, , , , bot] = instruction.split(' ');
-        if (!bots[bot]) {
-            bots[bot] = [];
-        }
-        bots[bot].push(parseInt(value, 10));
-    });
+const bots = {};
+const rules = {};
+const outputs = {};
 
-    while (botInstructions.length > 0) {
-        for (let i = 0; i < botInstructions.length; i++) {
-            const instruction = botInstructions[i];
-            const [, bot, , , lowType, lowDest, , , , highType, highDest] = instruction.split(' ');
-
-            if (bots[bot] && bots[bot].length === 2) {
-                const [low, high] = bots[bot].sort((a, b) => a - b);
-
-                if (low === 17 && high === 61) {
-                    return bot;
-                }
-
-                if (lowType === 'bot') {
-                    if (!bots[lowDest]) {
-                        bots[lowDest] = [];
-                    }
-                    bots[lowDest].push(low);
-                } else {
-                    if (!outputs[lowDest]) {
-                        outputs[lowDest] = [];
-                    }
-                    outputs[lowDest].push(low);
-                }
-
-                if (highType === 'bot') {
-                    if (!bots[highDest]) {
-                        bots[highDest] = [];
-                    }
-                    bots[highDest].push(high);
-                } else {
-                    if (!outputs[highDest]) {
-                        outputs[highDest] = [];
-                    }
-                    outputs[highDest].push(high);
-                }
-
-                botInstructions.splice(i, 1);
-                i--;
-            }
-        }
+function ins(x, k, v) {
+    if (!x[k]) {
+        x[k] = [];
     }
-
-    return null;
+    x[k] = x[k].concat(v).sort((a, b) => a - b);
 }
 
-const instructions = parseData('inputDay10.txt');
-const responsibleBot = processInstructions(instructions);
-console.log(`The bot responsible for comparing value-61 microchips with value-17 microchips is: ${responsibleBot}`);
+data.forEach(line => {
+    try {
+        const [bot, dlow, low, dhigh, high] = gm(/bot (\d+) gives low to (output|bot) (\d+) and high to (output|bot) (\d+)/, line);
+        const botNum = parseInt(bot, 10);
+        const lowNum = parseInt(low, 10);
+        const highNum = parseInt(high, 10);
+        rules[botNum] = [dlow, lowNum, dhigh, highNum];
+    } catch (e) {
+        // Ignore errors
+    }
+    try {
+        const [value, bot] = gi(/value (\d+) goes to bot (\d+)/, line);
+        ins(bots, bot, value);
+    } catch (e) {
+        // Ignore errors
+    }
+});
+
+let botsWithTwo = Object.keys(bots).filter(b => bots[b].length === 2).length;
+
+const ds = { 'output': outputs, 'bot': bots };
+while (botsWithTwo > 0) {
+    const bot = Object.keys(bots).find(b => bots[b].length === 2);
+    const [dlow, low, dhigh, high] = rules[bot];
+    const [lv, hv] = bots[bot];
+    if (lv === 17 && hv === 61) {
+        console.log("part a", bot);
+    }
+    ins(ds[dlow], low, lv);
+    ins(ds[dhigh], high, hv);
+    bots[bot] = [];
+    botsWithTwo = Object.keys(bots).filter(b => bots[b].length === 2).length;
+}
+
+console.log("part b", outputs[0][0] * outputs[1][0] * outputs[2][0]);
