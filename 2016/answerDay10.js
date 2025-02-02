@@ -56,3 +56,4 @@ while (botsWithTwo > 0) {
 }
 
 console.log("part b", outputs[0][0] * outputs[1][0] * outputs[2][0]);
+ 
