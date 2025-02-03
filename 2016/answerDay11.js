@@ -89,11 +89,12 @@ function minStepsToAssemble(state, elevator) {
     return -1;
 }
 
+// Exemple d'utilisation
 const data = parseData('inputDay11.txt');
 const initialState = [
-    new Set(['HM', 'LM']),
-    new Set(['HG']),
-    new Set(['LG']),
+    new Set(['PG', 'TG', 'TM', 'RG', 'CG', 'RM', 'PM', 'CM']),
+    new Set(['PM', 'CM']),
+    new Set(),
     new Set()
 ];
 const initialElevator = 0;
