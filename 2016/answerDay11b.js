@@ -62,12 +62,17 @@ function solveComps(comps) {
   return moves;
 }
 
+function aoc_11b(input) {
+  let comps = parseComponents(input);
+  comps.push(new ElementRTGComponents("elerium", 1, 1));
+  comps.push(new ElementRTGComponents("dilithium", 1, 1));
+  return solveComps(comps);
+}
+
 // Example usage
-const input = `The first floor contains a polonium generator, a thulium generator, a thulium-compatible microchip, a promethium generator, a ruthenium generator, a ruthenium-compatible microchip, a cobalt generator, and a cobalt-compatible microchip, an elerium generator, an elerium-compatible microchip, a dilithium generator, and a dilithium-compatible microchip.
+const input = `The first floor contains a polonium generator, a thulium generator, a thulium-compatible microchip, a promethium generator, a ruthenium generator, a ruthenium-compatible microchip, a cobalt generator, and a cobalt-compatible microchip.
 The second floor contains a polonium-compatible microchip and a promethium-compatible microchip.
 The third floor contains nothing relevant.
 The fourth floor contains nothing relevant.`;
 
-const components = parseComponents(input);
-const moves = solveComps(components);
-console.log(`Minimum number of moves: ${moves}`);
+console.log(aoc_11b(input));
