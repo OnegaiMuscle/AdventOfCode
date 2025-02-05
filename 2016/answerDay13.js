@@ -44,3 +44,37 @@ const targetY = 39;
 const result = findShortestPath(favoriteNumber, startX, startY, targetX, targetY);
 
 console.log(`Le nombre minimum de pas nécessaires pour atteindre (${targetX}, ${targetY}) est ${result}`);
+
+function reachableLocations(favoriteNumber, startX, startY, maxSteps) {
+  const queue = [{ x: startX, y: startY, steps: 0 }];
+  const visited = new Set([`${startX},${startY}`]);
+  const directions = [
+      { dx: 1, dy: 0 },
+      { dx: 0, dy: 1 },
+      { dx: -1, dy: 0 },
+      { dx: 0, dy: -1 }
+  ];
+
+  while (queue.length > 0) {
+      const { x, y, steps } = queue.shift();
+      if (steps >= maxSteps) continue;
+
+      for (const { dx, dy } of directions) {
+          const newX = x + dx;
+          const newY = y + dy;
+
+          if (newX >= 0 && newY >= 0 && !isWall(newX, newY, favoriteNumber) && !visited.has(`${newX},${newY}`)) {
+              queue.push({ x: newX, y: newY, steps: steps + 1 });
+              visited.add(`${newX},${newY}`);
+          }
+      }
+  }
+
+  return visited.size;
+}
+
+
+const maxSteps = 50;
+const resultbis = reachableLocations(favoriteNumber, startX, startY, maxSteps);
+
+console.log(`Le nombre de lieux que tu peux atteindre en au plus ${maxSteps} pas est ${resultbis}`)
