@@ -39,3 +39,34 @@ const dragonCurveDatabis = generateDragonCurveData(initialState, diskLengthbis);
 const checksumbis = calculateChecksum(dragonCurveDatabis);
 
 console.log(`The correct checksum for the disk is: ${checksumbis}`);
+
+
+function generateDragonCurveDatater(initialState, length) {
+  let data = initialState;
+  while (data.length < length) {
+      let b = data.split('').reverse().map(char => char === '0' ? '1' : '0').join('');
+      data = `${data}0${b}`;
+  }
+  return data.substring(0, length);
+}
+
+// Function to calculate the checksum more efficiently
+function calculateChecksumter(data) {
+  let checksum = data;
+  while (checksum.length % 2 === 0) {
+      let newChecksum = '';
+      for (let i = 0; i < checksum.length; i += 2) {
+          newChecksum += (checksum[i] === checksum[i + 1]) ? '1' : '0';
+      }
+      checksum = newChecksum;
+  }
+  return checksum;
+}
+
+
+
+// Generate the data and calculate the checksum
+const dragonCurveDatater = generateDragonCurveData(initialState, diskLengthbis);
+const checksumter = calculateChecksum(dragonCurveDatabis);
+
+console.log(`The correct checksum for the disk is: ${checksumter}`);
