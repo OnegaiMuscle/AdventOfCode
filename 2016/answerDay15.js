@@ -1,3 +1,6 @@
+
+
+
 const fs = require('fs');
 const path = require('path');
 
@@ -11,6 +14,8 @@ function parseData(filePath) {
             initialPosition: parseInt(parts[3], 10),
         };
     });
+    // Add the new disc with 11 positions and starting at position 0
+    discs.push({ positions: 11, initialPosition: 0 });
     return discs;
 }
 
@@ -42,4 +47,4 @@ function main() {
     console.log(`The first time you can press the button to get a capsule is ${alignmentTime}`);
 }
 
-main();
+main()
