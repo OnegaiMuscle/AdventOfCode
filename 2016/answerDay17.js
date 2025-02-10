@@ -55,3 +55,48 @@ function findShortestPath(passcode) {
 const passcode = 'pgflpeqp';
 const shortestPath = findShortestPath(passcode);
 console.log(`Le chemin le plus court vers la voûte est : ${shortestPath}`);
+
+
+// Fonction pour trouver la longueur du chemin le plus long vers la voûte
+function findLongestPathLength(passcode) {
+    let longestPathLength = 0;
+
+    function dfs(x, y, path) {
+        if (x === 3 && y === 3) {
+            if (path.length > longestPathLength) {
+                longestPathLength = path.length;
+            }
+            return;
+        }
+
+        const hash = md5(passcode + path);
+        const doorStates = getDoorStates(hash);
+
+        const directions = [
+            { x: 0, y: -1, move: 'U' },
+            { x: 0, y: 1, move: 'D' },
+            { x: -1, y: 0, move: 'L' },
+            { x: 1, y: 0, move: 'R' },
+        ];
+
+        directions.forEach((direction, index) => {
+            const newX = x + direction.x;
+            const newY = y + direction.y;
+
+            if (
+                newX >= 0 && newX < 4 &&
+                newY >= 0 && newY < 4 &&
+                doorStates[Object.keys(doorStates)[index]]
+            ) {
+                dfs(newX, newY, path + direction.move);
+            }
+        });
+    }
+
+    dfs(0, 0, '');
+    return longestPathLength;
+}
+
+
+const longestPathLength = findLongestPathLength(passcode);
+console.log(`La longueur du chemin le plus long vers la voûte est : ${longestPathLength}`);
