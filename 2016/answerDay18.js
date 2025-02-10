@@ -47,3 +47,8 @@ const totalRows = 40; // Nombre total de lignes, y compris la première ligne
 
 const safeTileCount = countSafeTiles(firstRow, totalRows);
 console.log(`Le nombre de tuiles sûres est : ${safeTileCount}`);
+
+const totalRowsbis = 400000; // Nombre total de lignes, y compris la première ligne
+
+const safeTileCountbis = countSafeTiles(firstRow, totalRowsbis);
+console.log(`Le nombre de tuiles sûres est : ${safeTileCountbis}`);
