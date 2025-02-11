@@ -35,6 +35,33 @@ function main() {
     const ranges = parseDataFromFile(filePath);
     const lowestUnblockedIP = findLowestUnblockedIP(ranges);
     console.log(`The lowest-valued IP that is not blocked is: ${lowestUnblockedIP}`);
-}
+    const allowedIPs = countAllowedIPs(ranges);
+    console.log(`The number of IPs that are allowed by the blacklist is: ${allowedIPs}`);
+  }
 
 main();
+
+
+// Function to find the total number of allowed IPs
+function countAllowedIPs(ranges) {
+    // Sort ranges by their start value
+    ranges.sort((a, b) => a.start - b.start);
+
+    let allowedIPs = 0;
+    let currentIP = 0;
+
+    for (const range of ranges) {
+        if (currentIP < range.start) {
+            allowedIPs += range.start - currentIP;
+        }
+        currentIP = Math.max(currentIP, range.end + 1);
+    }
+
+    if (currentIP <= 4294967295) {
+        allowedIPs += 4294967295 - currentIP + 1;
+    }
+
+    return allowedIPs;
+}
+
+
