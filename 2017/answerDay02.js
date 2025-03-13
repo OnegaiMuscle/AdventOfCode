@@ -21,3 +21,23 @@ const spreadsheet = parseInput(inputFilePath);
 const checksum = calculateChecksum(spreadsheet);
 
 console.log('Spreadsheet checksum:', checksum);
+
+
+
+// Function to calculate the sum of evenly divisible results for the spreadsheet
+function calculateDivisibleSum(spreadsheet) {
+    return spreadsheet.reduce((totalSum, row) => {
+        for (let i = 0; i < row.length; i++) {
+            for (let j = 0; j < row.length; j++) {
+                if (i !== j && row[i] % row[j] === 0) { // Check if numbers are evenly divisible
+                    return totalSum + (row[i] / row[j]);
+                }
+            }
+        }
+    }, 0); // Initial total sum is 0
+}
+
+
+const result = calculateDivisibleSum(spreadsheet);
+
+console.log('Sum of evenly divisible results:', result);
