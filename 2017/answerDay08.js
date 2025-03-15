@@ -46,7 +46,7 @@ function findLargestRegisterValue(instructions) {
 
 // Main function
 function main() {
-    const filePath = 'inputday08.txt'; // Replace with your input file path
+    const filePath = 'inputDay08.txt'; // Replace with your input file path
     const instructions = parseInstructions(filePath);
     const largestValue = findLargestRegisterValue(instructions);
     console.log(`The largest value in any register is: ${largestValue}`);
