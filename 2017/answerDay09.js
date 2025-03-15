@@ -55,3 +55,49 @@ function main() {
 }
 
 main();
+
+
+
+
+// Function to count non-canceled characters within the garbage
+function countGarbageCharacters(input) {
+    let inGarbage = false;
+    let skipNext = false;
+    let garbageCount = 0;
+
+    for (const char of input) {
+        if (skipNext) {
+            // Skip the next character due to "!"
+            skipNext = false;
+            continue;
+        }
+
+        if (char === '!') {
+            // Ignore the next character
+            skipNext = true;
+        } else if (inGarbage) {
+            if (char === '>') {
+                // End of garbage
+                inGarbage = false;
+            } else {
+                // Count characters in garbage
+                garbageCount++;
+            }
+        } else if (char === '<') {
+            // Start of garbage
+            inGarbage = true;
+        }
+    }
+
+    return garbageCount;
+}
+
+// Main function
+function mainbis() {
+    const filePath = 'inputDay09.txt'; // Replace with your input file path
+    const input = parseInput(filePath);
+    const garbageCount = countGarbageCharacters(input);
+    console.log(`The total number of non-canceled characters within the garbage is: ${garbageCount}`);
+}
+
+mainbis();
