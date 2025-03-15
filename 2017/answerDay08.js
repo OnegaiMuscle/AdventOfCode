@@ -1,4 +1,3 @@
-
 const fs = require('fs');
 
 // Function to parse the instructions from a text file
@@ -32,24 +31,30 @@ function evaluateCondition(registers, condRegister, operator, condValue) {
     }
 }
 
-// Function to execute the instructions and find the largest register value
-function findLargestRegisterValue(instructions) {
+// Function to execute the instructions and find the highest values
+function findLargestAndHighestDuringProcess(instructions) {
     const registers = {};
+    let highestValueEver = 0;
+
     instructions.forEach(({ register, operation, value, condRegister, operator, condValue }) => {
         if (evaluateCondition(registers, condRegister, operator, condValue)) {
             registers[register] = registers[register] || 0;
             registers[register] += (operation === 'inc' ? value : -value);
+            highestValueEver = Math.max(highestValueEver, registers[register]);
         }
     });
-    return Math.max(...Object.values(registers), 0);
+
+    const largestValueAtEnd = Math.max(...Object.values(registers), 0);
+    return { largestValueAtEnd, highestValueEver };
 }
 
 // Main function
 function main() {
     const filePath = 'inputDay08.txt'; // Replace with your input file path
     const instructions = parseInstructions(filePath);
-    const largestValue = findLargestRegisterValue(instructions);
-    console.log(`The largest value in any register is: ${largestValue}`);
+    const { largestValueAtEnd, highestValueEver } = findLargestAndHighestDuringProcess(instructions);
+    console.log(`The largest value in any register at the end is: ${largestValueAtEnd}`);
+    console.log(`The highest value ever held in any register during the process is: ${highestValueEver}`);
 }
 
 main();
