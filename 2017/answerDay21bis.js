@@ -131,9 +131,11 @@ function main() {
     console.log(`The number of pixels that stay on after ${iterationsPart1} iterations is: ${resultPart1}`);
 
     // Part 2: Pixels on after 18 iterations
+    console.time('Execution Time');
     const iterationsPart2 = 18;
     const resultPart2 = enhanceImage(initialGrid, rules, iterationsPart2);
     console.log(`The number of pixels that stay on after ${iterationsPart2} iterations is: ${resultPart2}`);
+    console.timeEnd('Execution Time');
 }
 
 // Execute the main function
