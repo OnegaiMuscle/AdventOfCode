@@ -1,149 +1,200 @@
 const fs = require('fs');
 
-// Convertit une grille en bitboard
-function gridToBitboard(grid) {
-    let bitboard = 0, size = grid.length;
+// Convert a string pattern to a bitboard
+function patternToBitboard(pattern) {
+    const grid = pattern.split('/');
+    let bitboard = 0n;
+    const size = grid.length;
+
     for (let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
             if (grid[i][j] === '#') {
-                bitboard |= (1 << (i * size + j));
+                bitboard |= 1n << BigInt(i * size + j);
             }
         }
     }
     return bitboard;
 }
 
-// Convertit un bitboard en grille
-function bitboardToGrid(bitboard, size) {
-    return Array.from({ length: size }, (_, i) =>
-        Array.from({ length: size }, (_, j) =>
-            (bitboard & (1 << (i * size + j))) ? '#' : '.'
-        ).join('')
-    );
+// Convert a bitboard to a pattern string
+function bitboardToPattern(bitboard, size) {
+    let result = [];
+    for (let i = 0; i < size; i++) {
+        let row = '';
+        for (let j = 0; j < size; j++) {
+            row += (bitboard & (1n << BigInt(i * size + j))) ? '#' : '.';
+        }
+        result.push(row);
+    }
+    return result.join('/');
 }
 
-// Rotation 90° d'un bitboard
+// Rotate a bitboard 90 degrees clockwise
 function rotate90(bitboard, size) {
-    let newBoard = 0;
+    let result = 0n;
     for (let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
-            if (bitboard & (1 << (i * size + j))) {
-                newBoard |= (1 << (j * size + (size - 1 - i)));
+            if (bitboard & (1n << BigInt(i * size + j))) {
+                result |= 1n << BigInt(j * size + (size - 1 - i));
             }
         }
     }
-    return newBoard;
+    return result;
 }
 
-// Génère toutes les transformations possibles (rotations + flips)
-function generateTransformations(bitboard, size) {
-    let transformations = new Set();
-    let current = bitboard;
-    for (let i = 0; i < 4; i++) {
-        transformations.add(current);
-        transformations.add(flipHorizontal(current, size));
-        transformations.add(flipVertical(current, size));
-        current = rotate90(current, size);
+// Flip a bitboard horizontally
+function flipHorizontal(bitboard, size) {
+    let result = 0n;
+    for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+            if (bitboard & (1n << BigInt(i * size + j))) {
+                result |= 1n << BigInt(i * size + (size - 1 - j));
+            }
+        }
     }
+    return result;
+}
+
+// Generate all unique transformations of a pattern
+function getAllTransformations(pattern) {
+    const size = pattern.split('/').length;
+    let bitboard = patternToBitboard(pattern);
+    let transformations = new Set();
+
+    // Add original pattern
+    transformations.add(bitboardToPattern(bitboard, size));
+
+    // Add rotations
+    for (let i = 0; i < 3; i++) {
+        bitboard = rotate90(bitboard, size);
+        transformations.add(bitboardToPattern(bitboard, size));
+    }
+
+    // Flip and add rotations
+    bitboard = flipHorizontal(patternToBitboard(pattern), size);
+    transformations.add(bitboardToPattern(bitboard, size));
+
+    for (let i = 0; i < 3; i++) {
+        bitboard = rotate90(bitboard, size);
+        transformations.add(bitboardToPattern(bitboard, size));
+    }
+
     return transformations;
 }
 
-// Flip horizontal
-function flipHorizontal(bitboard, size) {
-    let newBoard = 0;
-    for (let i = 0; i < size; i++) {
-        let row = (bitboard >> (i * size)) & ((1 << size) - 1);
-        let flippedRow = reverseBits(row, size);
-        newBoard |= flippedRow << (i * size);
-    }
-    return newBoard;
-}
+// Parse rules from the input file
+function parseRules(input) {
+    const rules = new Map();
+    const lines = input.trim().split('\n');
 
-// Flip vertical
-function flipVertical(bitboard, size) {
-    let newBoard = 0;
-    for (let i = 0; i < size; i++) {
-        let row = (bitboard >> (i * size)) & ((1 << size) - 1);
-        newBoard |= row << ((size - 1 - i) * size);
-    }
-    return newBoard;
-}
+    for (const line of lines) {
+        const [pattern, result] = line.split(' => ');
+        const transformations = getAllTransformations(pattern);
 
-// Reverse bits d'une ligne
-function reverseBits(n, size) {
-    let rev = 0;
-    for (let i = 0; i < size; i++) {
-        rev |= ((n >> i) & 1) << (size - 1 - i);
-    }
-    return rev;
-}
-
-// Parse les règles depuis un fichier
-function parseRules(filename) {
-    let rules = new Map();
-    let data = fs.readFileSync(filename, 'utf8').trim().split('\n');
-
-    for (let line of data) {
-        let [input, output] = line.split(' => ');
-        let inputGrid = input.split('/');
-        let outputGrid = output.split('/');
-
-        let inputSize = inputGrid.length;
-        let outputBitboard = gridToBitboard(outputGrid);
-
-        let inputBitboard = gridToBitboard(inputGrid);
-        for (let variant of generateTransformations(inputBitboard, inputSize)) {
-            rules.set(variant, outputBitboard);
+        for (const transformation of transformations) {
+            rules.set(transformation, result);
         }
     }
+
     return rules;
 }
 
-// Transforme la grille en utilisant les règles
-function enhanceGrid(grid, rules) {
-    let size = grid.length;
-    let blockSize = size % 2 === 0 ? 2 : 3;
-    let newBlockSize = blockSize + 1;
-    let newSize = (size / blockSize) * newBlockSize;
+// Split grid into subgrids of size 2x2 or 3x3
+function splitGrid(grid) {
+    const size = grid.length;
+    const subgridSize = size % 2 === 0 ? 2 : 3;
+    const subgridsPerRow = size / subgridSize;
+    const subgrids = [];
 
-    let newGrid = Array(newSize).fill().map(() => Array(newSize).fill('.'));
-    let bitboards = [];
-
-    for (let i = 0; i < size; i += blockSize) {
-        for (let j = 0; j < size; j += blockSize) {
-            let subGrid = grid.slice(i, i + blockSize).map(row => row.slice(j, j + blockSize));
-            let subBitboard = gridToBitboard(subGrid);
-            let enhancedBitboard = rules.get(subBitboard);
-            bitboards.push({ bitboard: enhancedBitboard, x: i / blockSize, y: j / blockSize });
+    for (let i = 0; i < subgridsPerRow; i++) {
+        for (let j = 0; j < subgridsPerRow; j++) {
+            const subgrid = [];
+            for (let x = 0; x < subgridSize; x++) {
+                let row = '';
+                for (let y = 0; y < subgridSize; y++) {
+                    row += grid[i * subgridSize + x][j * subgridSize + y];
+                }
+                subgrid.push(row);
+            }
+            subgrids.push(subgrid.join('/'));
         }
     }
 
-    // Reconstruction
-    for (let { bitboard, x, y } of bitboards) {
-        let enhancedGrid = bitboardToGrid(bitboard, newBlockSize);
-        for (let i = 0; i < newBlockSize; i++) {
-            for (let j = 0; j < newBlockSize; j++) {
-                newGrid[x * newBlockSize + i][y * newBlockSize + j] = enhancedGrid[i][j];
+    return subgrids;
+}
+
+// Merge subgrids back into a single grid
+function mergeSubgrids(subgrids, subgridSize) {
+    const subgridsPerRow = Math.sqrt(subgrids.length);
+    const size = subgridsPerRow * subgridSize;
+    const grid = Array(size).fill('').map(() => '');
+
+    for (let i = 0; i < subgridsPerRow; i++) {
+        for (let j = 0; j < subgridsPerRow; j++) {
+            const subgrid = subgrids[i * subgridsPerRow + j].split('/');
+
+            for (let x = 0; x < subgridSize; x++) {
+                for (let y = 0; y < subgridSize; y++) {
+                    grid[i * subgridSize + x] += subgrid[x][y];
+                }
             }
         }
     }
 
-    return newGrid;
+    return grid;
 }
 
-// Exécute l'algorithme pour `n` itérations
-function countPixelsOn(filename, iterations) {
-    let rules = parseRules(filename);
-    let grid = ['.#.', '..#', '###'].map(row => row.split(''));
+// Apply one iteration of enhancement
+function enhanceGrid(grid, rules) {
+    const subgrids = splitGrid(grid);
+    const enhancedSubgrids = [];
+
+    for (const subgrid of subgrids) {
+        const enhancedSubgrid = rules.get(subgrid);
+        if (!enhancedSubgrid) {
+            throw new Error(`No rule found for subgrid: ${subgrid}`);
+        }
+        enhancedSubgrids.push(enhancedSubgrid);
+    }
+
+    const newSubgridSize = grid.length % 2 === 0 ? 3 : 4;
+    return mergeSubgrids(enhancedSubgrids, newSubgridSize);
+}
+
+// Count the number of '#' in the grid
+function countOnPixels(grid) {
+    return grid.join('').split('').filter(c => c === '#').length;
+}
+
+// Process the grid for a given number of iterations
+function solve(input, iterations) {
+    const rules = parseRules(input);
+    let grid = ['.#.', '..#', '###'];
 
     for (let i = 0; i < iterations; i++) {
         grid = enhanceGrid(grid, rules);
     }
 
-    return grid.flat().filter(c => c === '#').length;
+    return countOnPixels(grid);
 }
 
-// Exécuter
-const filename = 'inputDay21.txt';
-console.log("Pixels ON after 5 iterations:", countPixelsOn(filename, 5));
-console.log("Pixels ON after 18 iterations:", countPixelsOn(filename, 18));
+// Main execution
+function main() {
+    try {
+        const input = fs.readFileSync('inputDay21.txt', 'utf8');
+
+        console.time('Part 1');
+        const part1 = solve(input, 5);
+        console.timeEnd('Part 1');
+        console.log(`After 5 iterations: ${part1} pixels are on`);
+
+        console.time('Part 2');
+        const part2 = solve(input, 18);
+        console.timeEnd('Part 2');
+        console.log(`After 18 iterations: ${part2} pixels are on`);
+    } catch (error) {
+        console.error('Error:', error.message);
+    }
+}
+
+main();
