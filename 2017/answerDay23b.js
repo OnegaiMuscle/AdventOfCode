@@ -1,30 +1,36 @@
-function isPrime(n) {
-  if (n < 2) return false;
-  for (let i = 2; i * i <= n; i++) {
-      if (n % i === 0) return false;
-  }
-  return true;
-}
-
-function calculateH() {
+function run() {
   let h = 0;
-  const bStart = 108400; // Start value for b
-  const bEnd = 125400;   // End value for b
-  const step = 17;       // Increment step for b
+  let b = 99;
+  let c = b;
+  b = b * 100;
+  b = b + 100000;
+  c = b + 17000;
 
-  for (let b = bStart; b <= bEnd; b += step) {
-      if (!isPrime(b)) {
-          h++; // Increment h for non-prime numbers
+  while (true) { // Loop E
+      let f = 1;
+      let d = 2;
+
+      console.log(b, c, d, f, h);
+
+      while (true) { // Loop B
+          if (b % d === 0) {
+              f = 0;
+          }
+          d = d + 1;
+          if (d !== b) {
+              continue;
+          }
+          if (f === 0) {
+              h = h + 1;
+          }
+          if (b === c) {
+              return h;
+          }
+          b = b + 17;
+          break;
       }
   }
-
-  return h;
 }
 
-// Main function
-function main() {
-  const hValue = calculateH();
-  console.log(`The final value in register h is ${hValue}.`);
-}
+console.log(run());
 
-main();
