@@ -1,4 +1,3 @@
-
 const fs = require('fs');
 
 // Function to parse the input program from a text file
@@ -7,8 +6,8 @@ function parseProgram(filename) {
     return data.split('\n').map(line => line.split(' '));
 }
 
-// Function to simulate the program and count `mul` instructions
-function simulateProgram(instructions) {
+// Part 1: Count `mul` instruction invocations
+function simulateProgramPart1(instructions) {
     const registers = {}; // Registers a through h
     let mulCount = 0; // Counter for `mul` instructions
     let pointer = 0; // Instruction pointer
@@ -20,8 +19,8 @@ function simulateProgram(instructions) {
 
     while (pointer >= 0 && pointer < instructions.length) {
         const [cmd, x, y] = instructions[pointer];
-        const yValue = isNaN(y) ? registers[y] || 0 : parseInt(y, 10); // Determine the value of y
-        const xValue = isNaN(x) ? registers[x] || 0 : parseInt(x, 10); // Determine the value of x
+        const yValue = isNaN(y) ? registers[y] || 0 : parseInt(y, 10);
+        const xValue = isNaN(x) ? registers[x] || 0 : parseInt(x, 10);
 
         switch (cmd) {
             case 'set':
@@ -49,12 +48,45 @@ function simulateProgram(instructions) {
     return mulCount;
 }
 
+// Part 2: Optimize to calculate the final value of register h
+function calculateHOptimized() {
+    // Analysis of the program:
+    // The program calculates how many non-prime numbers exist in a range of values.
+    let h = 0;
+    const bStart = 108400; // The initial value of b
+    const bEnd = 125400;   // The final value of b
+    const step = 17;       // Increment step for b
+
+    for (let b = bStart; b <= bEnd; b += step) {
+        if (!isPrime(b)) {
+            h++;
+        }
+    }
+
+    return h;
+}
+
+// Helper function to determine if a number is prime
+function isPrime(n) {
+    if (n < 2) return false;
+    for (let i = 2; i * i <= n; i++) {
+        if (n % i === 0) return false;
+    }
+    return true;
+}
+
 // Main function
 function main() {
     const filename = 'inputDay23.txt'; // Replace with your actual input file name
     const instructions = parseProgram(filename);
-    const result = simulateProgram(instructions);
-    console.log(`The 'mul' instruction is invoked ${result} times.`);
+
+    // Part 1: Count the `mul` instructions
+    const resultPart1 = simulateProgramPart1(instructions);
+    console.log(`The 'mul' instruction is invoked ${resultPart1} times.`);
+
+    // Part 2: Calculate the final value of register h
+    const resultPart2 = calculateHOptimized();
+    console.log(`The final value in register h is ${resultPart2}.`);
 }
 
 // Run the main function
