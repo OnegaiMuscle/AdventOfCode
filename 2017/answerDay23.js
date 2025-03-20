@@ -48,14 +48,12 @@ function simulateProgramPart1(instructions) {
     return mulCount;
 }
 
-// Part 2: Optimize to calculate the final value of register h
+// Part 2: Optimized Prime Calculation for Register h
 function calculateHOptimized() {
-    // Analysis of the program:
-    // The program calculates how many non-prime numbers exist in a range of values.
     let h = 0;
-    const bStart = 108400; // The initial value of b
-    const bEnd = 125400;   // The final value of b
-    const step = 17;       // Increment step for b
+    const bStart = 108400; // Start value for b
+    const bEnd = 125400;   // End value for b
+    const step = 17;       // Step value for b
 
     for (let b = bStart; b <= bEnd; b += step) {
         if (!isPrime(b)) {
@@ -66,12 +64,22 @@ function calculateHOptimized() {
     return h;
 }
 
-// Helper function to determine if a number is prime
+// Optimized Prime Check with Memoization
+const primeCache = new Map();
+
 function isPrime(n) {
     if (n < 2) return false;
+    if (primeCache.has(n)) return primeCache.get(n);
+
+    // Check divisors up to the square root of n
     for (let i = 2; i * i <= n; i++) {
-        if (n % i === 0) return false;
+        if (n % i === 0) {
+            primeCache.set(n, false);
+            return false;
+        }
     }
+
+    primeCache.set(n, true);
     return true;
 }
 
