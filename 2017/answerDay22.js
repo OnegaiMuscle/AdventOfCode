@@ -1,4 +1,3 @@
-
 const fs = require('fs');
 
 // Function to parse the map from a text file
@@ -16,17 +15,15 @@ const DIRECTIONS = [
     [0, -1]  // Left
 ];
 
-// Virus simulation
-function simulateVirus(grid, bursts) {
-    // Set for infected nodes
+// Part 1: Basic Virus Simulation (10,000 bursts)
+function simulateVirusBasic(grid, bursts) {
     const infected = new Set();
 
-    // Initialize the grid
+    // Initialize the infected set from the grid
     const rows = grid.length;
     const cols = grid[0].length;
     const offset = Math.floor(rows / 2);
 
-    // Populate the infected set from the initial grid
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
             if (grid[r][c] === '#') {
@@ -35,43 +32,93 @@ function simulateVirus(grid, bursts) {
         }
     }
 
-    // Virus carrier position and direction
-    let x = 0; // Row
-    let y = 0; // Column
-    let direction = 0; // Initially facing up
-    let infections = 0; // Count of caused infections
+    let x = 0, y = 0, direction = 0, infections = 0;
 
     for (let burst = 0; burst < bursts; burst++) {
         const key = `${x},${y}`;
 
-        // Check if current node is infected
         if (infected.has(key)) {
-            // Infected: Turn right
+            // Turn right, clean the node
             direction = (direction + 1) % 4;
-            infected.delete(key); // Clean the node
+            infected.delete(key);
         } else {
-            // Clean: Turn left
-            direction = (direction + 3) % 4; // Left turn
-            infected.add(key); // Infect the node
+            // Turn left, infect the node
+            direction = (direction + 3) % 4;
+            infected.add(key);
             infections++;
         }
 
-        // Move forward in the current direction
+        // Move forward
         x += DIRECTIONS[direction][0];
         y += DIRECTIONS[direction][1];
     }
 
-    return infections; // Return the number of caused infections
+    return infections;
+}
+
+// Part 2: Advanced Virus Simulation with New States (10,000,000 bursts)
+function simulateVirusAdvanced(grid, bursts) {
+    const nodeStates = new Map();
+
+    // Initialize the node states from the grid
+    const rows = grid.length;
+    const cols = grid[0].length;
+    const offset = Math.floor(rows / 2);
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (grid[r][c] === '#') {
+                nodeStates.set(`${r - offset},${c - offset}`, 'infected');
+            }
+        }
+    }
+
+    let x = 0, y = 0, direction = 0, infections = 0;
+
+    for (let burst = 0; burst < bursts; burst++) {
+        const key = `${x},${y}`;
+        const state = nodeStates.get(key) || 'clean';
+
+        if (state === 'clean') {
+            // Turn left, weaken the node
+            direction = (direction + 3) % 4;
+            nodeStates.set(key, 'weakened');
+        } else if (state === 'weakened') {
+            // Continue forward, infect the node
+            nodeStates.set(key, 'infected');
+            infections++;
+        } else if (state === 'infected') {
+            // Turn right, flag the node
+            direction = (direction + 1) % 4;
+            nodeStates.set(key, 'flagged');
+        } else if (state === 'flagged') {
+            // Reverse direction, clean the node
+            direction = (direction + 2) % 4;
+            nodeStates.delete(key);
+        }
+
+        // Move forward
+        x += DIRECTIONS[direction][0];
+        y += DIRECTIONS[direction][1];
+    }
+
+    return infections;
 }
 
 // Main function
 function main() {
     const filename = 'inputDay22.txt'; // Replace with your input filename
     const grid = parseMap(filename);
-    const bursts = 10000; // Number of bursts to simulate
 
-    const result = simulateVirus(grid, bursts);
-    console.log(`After ${bursts} bursts, ${result} bursts caused an infection.`);
+    // Part 1
+    const burstsPart1 = 10000;
+    const resultPart1 = simulateVirusBasic(grid, burstsPart1);
+    console.log(`After ${burstsPart1} bursts (Part 1), ${resultPart1} bursts caused an infection.`);
+
+    // Part 2
+    const burstsPart2 = 10000000;
+    const resultPart2 = simulateVirusAdvanced(grid, burstsPart2);
+    console.log(`After ${burstsPart2} bursts (Part 2), ${resultPart2} bursts caused an infection.`);
 }
 
 // Run the main function
