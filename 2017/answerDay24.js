@@ -1,4 +1,3 @@
-
 const fs = require('fs');
 
 // Function to parse the components from the input file
@@ -10,29 +9,52 @@ function parseComponents(filename) {
     });
 }
 
-// Recursive function to find the strongest bridge
-function findStrongestBridge(components, currentPort = 0, currentBridge = []) {
-    let maxStrength = currentBridge.reduce((sum, { a, b }) => sum + a + b, 0);
+// Recursive function to find the strongest and longest bridge
+function findBridges(components, currentPort = 0, currentBridge = []) {
+    const currentStrength = currentBridge.reduce((sum, { a, b }) => sum + a + b, 0);
+    const currentLength = currentBridge.length;
+
+    let strongestBridge = { strength: currentStrength, length: currentLength };
+    let longestStrongestBridge = { strength: currentStrength, length: currentLength };
 
     for (let i = 0; i < components.length; i++) {
         const { a, b } = components[i];
         if (a === currentPort || b === currentPort) {
             const nextPort = a === currentPort ? b : a;
             const remainingComponents = components.filter((_, index) => index !== i);
-            const bridgeStrength = findStrongestBridge(remainingComponents, nextPort, [...currentBridge, components[i]]);
-            maxStrength = Math.max(maxStrength, bridgeStrength);
+            const { strongest, longestStrongest } = findBridges(
+                remainingComponents,
+                nextPort,
+                [...currentBridge, components[i]]
+            );
+
+            // Update strongest bridge
+            if (strongest.strength > strongestBridge.strength) {
+                strongestBridge = strongest;
+            }
+
+            // Update longest-strongest bridge
+            if (
+                longestStrongest.length > longestStrongestBridge.length ||
+                (longestStrongest.length === longestStrongestBridge.length &&
+                    longestStrongest.strength > longestStrongestBridge.strength)
+            ) {
+                longestStrongestBridge = longestStrongest;
+            }
         }
     }
 
-    return maxStrength;
+    return { strongest: strongestBridge, longestStrongest: longestStrongestBridge };
 }
 
 // Main function
 function main() {
     const filename = 'inputDay24.txt'; // Replace with your actual input file name
     const components = parseComponents(filename);
-    const strongestBridgeStrength = findStrongestBridge(components);
-    console.log(`The strength of the strongest bridge is: ${strongestBridgeStrength}`);
+    const { strongest, longestStrongest } = findBridges(components);
+
+    console.log(`The strength of the strongest bridge is: ${strongest.strength}`);
+    console.log(`The strength of the longest bridge is: ${longestStrongest.strength}`);
 }
 
 // Execute the main function
