@@ -1,14 +1,28 @@
-
 const fs = require("fs");
 
-// Function to parse data from a text file
+// Function to parse input data from a text file
 function parseData(filePath) {
     const data = fs.readFileSync(filePath, "utf-8").trim().split("\n\n");
     const samples = data.map(block => {
         const lines = block.split("\n");
-        const before = JSON.parse(lines[0].match(/Before: (.+)/)[1]);
+
+        // Parse "Before:"
+        const beforeMatch = lines[0].match(/Before:\[([\d, ]+)\]/);
+        if (!beforeMatch) {
+            throw new Error(`Invalid "Before" format: ${lines[0]}`);
+        }
+        const before = beforeMatch[1].split(", ").map(Number);
+
+        // Parse instruction
         const instruction = lines[1].split(" ").map(Number);
-        const after = JSON.parse(lines[2].match(/After: (.+)/)[1]);
+
+        // Parse "After:"
+        const afterMatch = lines[2].match(/After:\[([\d, ]+)\]/);
+        if (!afterMatch) {
+            throw new Error(`Invalid "After" format: ${lines[2]}`);
+        }
+        const after = afterMatch[1].split(", ").map(Number);
+
         return { before, instruction, after };
     });
     return samples;
