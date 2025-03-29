@@ -1,7 +1,6 @@
-
 const fs = require("fs");
 
-// Function to parse data from a text file
+// Function to parse input data
 function parseData(filePath) {
     const data = fs.readFileSync(filePath, "utf-8").trim().split("\n");
     const clayCoordinates = new Set();
@@ -48,14 +47,14 @@ function simulateWaterFlow(clayCoordinates, minX, maxX, minY, maxY) {
     const waterReachable = new Set();
     const settledWater = new Set();
 
-    const spring = { x: 500, y: 0 }; // Water spring coordinates
-    const queue = [spring]; // Queue for BFS traversal
+    const spring = { x: 500, y: 0 };
+    const queue = [spring];
 
     while (queue.length > 0) {
         const { x, y } = queue.pop();
 
         // Ignore tiles outside the bounds
-        if (y < minY || y > maxY) {
+        if (y > maxY) {
             continue;
         }
 
@@ -120,9 +119,13 @@ function main(filePath) {
     const { clayCoordinates, minX, maxX, minY, maxY } = parseData(filePath);
     const { waterReachable, settledWater } = simulateWaterFlow(clayCoordinates, minX, maxX, minY, maxY);
 
+    // Debugging: Log the size of waterReachable and settledWater
+    console.log(`Water Reachable: ${waterReachable.size}`);
+    console.log(`Settled Water: ${settledWater.size}`);
+
     const result = Array.from(waterReachable)
                         .filter(coord => {
-                            const [x, y] = coord.split(",").map(Number);
+                            const [_, y] = coord.split(",").map(Number);
                             return y >= minY && y <= maxY;
                         }).length;
 
