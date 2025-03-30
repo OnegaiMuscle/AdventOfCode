@@ -35,15 +35,43 @@ const operations = {
   eqrr: (registers, a, b, c) => { registers[c] = registers[a] === registers[b] ? 1 : 0; },
 };
 
-// Function to execute the program
-function executeProgram(program, initialRegisters) {
+// Function to execute the program with optimizations
+function executeProgramOptimized(program, initialRegisters) {
   const { instructionPointer, instructions } = program;
   const registers = [...initialRegisters];
+  const seenStates = new Map(); // For cycle detection
+  let cycleStart = null;
+  let cycleLength = null;
 
-  while (registers[instructionPointer] >= 0 && registers[instructionPointer] < instructions.length) {
+  while (
+      registers[instructionPointer] >= 0 &&
+      registers[instructionPointer] < instructions.length
+  ) {
+      // Detect cycles by hashing the state
+      const stateHash = `${registers.join(',')},ip=${registers[instructionPointer]}`;
+      if (seenStates.has(stateHash)) {
+          cycleStart = seenStates.get(stateHash);
+          cycleLength = registers[instructionPointer] - cycleStart;
+          break;
+      }
+      seenStates.set(stateHash, registers[instructionPointer]);
+
+      // Execute the current instruction
       const instruction = instructions[registers[instructionPointer]];
       operations[instruction.opcode](registers, instruction.a, instruction.b, instruction.c);
+
+      // Move to the next instruction
       registers[instructionPointer]++;
+  }
+
+  // Optimization: If a cycle is detected, skip directly to the final state
+  if (cycleStart !== null && cycleLength !== null) {
+      const remainingSteps = (1_000_000_000 - registers[instructionPointer]) % cycleLength;
+      for (let i = 0; i < remainingSteps; i++) {
+          const instruction = instructions[registers[instructionPointer]];
+          operations[instruction.opcode](registers, instruction.a, instruction.b, instruction.c);
+          registers[instructionPointer]++;
+      }
   }
 
   return registers[0];
@@ -54,10 +82,10 @@ const program = parseProgram('inputDay19.txt'); // Replace 'input.txt' with your
 
 // Scenario 1: Register 0 starts at 0
 const initialRegisters1 = [0, 0, 0, 0, 0, 0];
-const result1 = executeProgram(program, initialRegisters1);
+const result1 = executeProgramOptimized(program, initialRegisters1);
 console.log('Value left in register 0 (starting with 0):', result1);
 
 // Scenario 2: Register 0 starts at 1
 const initialRegisters2 = [1, 0, 0, 0, 0, 0];
-const result2 = executeProgram(program, initialRegisters2);
+const result2 = executeProgramOptimized(program, initialRegisters2);
 console.log('Value left in register 0 (starting with 1):', result2);
