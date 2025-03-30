@@ -1,4 +1,3 @@
-
 // Function to parse input from a text file
 function parseProgram(filename) {
   const fs = require('fs');
@@ -37,19 +36,28 @@ const operations = {
 };
 
 // Function to execute the program
-function executeProgram(program, registers) {
+function executeProgram(program, initialRegisters) {
   const { instructionPointer, instructions } = program;
+  const registers = [...initialRegisters];
+
   while (registers[instructionPointer] >= 0 && registers[instructionPointer] < instructions.length) {
       const instruction = instructions[registers[instructionPointer]];
-      registers[instructionPointer] = registers[instructionPointer];
       operations[instruction.opcode](registers, instruction.a, instruction.b, instruction.c);
       registers[instructionPointer]++;
   }
+
   return registers[0];
 }
 
 // Example usage
 const program = parseProgram('inputDay19.txt'); // Replace 'input.txt' with your file path
-const registers = [0, 0, 0, 0, 0, 0]; // Initialize registers to all zeroes
-const result = executeProgram(program, registers);
-console.log('Value left in register 0:', result);
+
+// Scenario 1: Register 0 starts at 0
+const initialRegisters1 = [0, 0, 0, 0, 0, 0];
+const result1 = executeProgram(program, initialRegisters1);
+console.log('Value left in register 0 (starting with 0):', result1);
+
+// Scenario 2: Register 0 starts at 1
+const initialRegisters2 = [1, 0, 0, 0, 0, 0];
+const result2 = executeProgram(program, initialRegisters2);
+console.log('Value left in register 0 (starting with 1):', result2);
