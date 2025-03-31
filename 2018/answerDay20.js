@@ -12,7 +12,7 @@ const directions = {
   W: [-1, 0],
 };
 
-// Function to build the map and calculate door distances
+// Function to build the map and calculate distances
 function buildFacilityMap(regex) {
   const map = new Map(); // Tracks rooms and their connections
   let x = 0, y = 0; // Starting position
@@ -71,20 +71,26 @@ function buildFacilityMap(regex) {
   };
 }
 
-// Function to find the furthest room and the shortest path
+// Function to analyze the facility
 function analyzeFacility(regex) {
   const { distances } = buildFacilityMap(regex);
 
   // Find the furthest room
   let furthestDistance = 0;
+  let roomsAtLeast1000Doors = 0;
+
   for (const distance of distances.values()) {
       if (distance > furthestDistance) {
           furthestDistance = distance;
+      }
+      if (distance >= 1000) {
+          roomsAtLeast1000Doors++;
       }
   }
 
   return {
       furthestDistance,
+      roomsAtLeast1000Doors,
   };
 }
 
@@ -94,3 +100,4 @@ const regex = parseRegex(filename);
 const result = analyzeFacility(regex);
 
 console.log('Furthest room requires passing through', result.furthestDistance, 'doors.');
+console.log('Number of rooms with at least 1000 doors:', result.roomsAtLeast1000Doors);
