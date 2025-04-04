@@ -1,11 +1,12 @@
 const fs = require('fs');
 
-function runIntcodeProgram(intcode) {
+// Intcode Computer Functions
+function runIntcodeProgram(intcode, noun = 12, verb = 2) {
     let memory = [...intcode];
 
-    // Restore "1202 program alarm" state
-    memory[1] = 12;
-    memory[2] = 2;
+    // Set noun and verb
+    memory[1] = noun;
+    memory[2] = verb;
 
     let pointer = 0;
     while (memory[pointer] !== 99) {
@@ -30,7 +31,25 @@ function getIntcodeFromFile(filename) {
     return data.trim().split(',').map(Number);
 }
 
-// Example usage
+// Find noun-verb combination for output 19690720
+function findNounVerb(filename, targetOutput) {
+    const originalIntcode = getIntcodeFromFile(filename);
+
+    for (let noun = 0; noun <= 99; noun++) {
+        for (let verb = 0; verb <= 99; verb++) {
+            if (runIntcodeProgram(originalIntcode, noun, verb) === targetOutput) {
+                return 100 * noun + verb;
+            }
+        }
+    }
+    return null;
+}
+
+
+
 const intcode = getIntcodeFromFile('inputDay02.txt');
 const result = runIntcodeProgram(intcode);
 console.log('Value at position 0 after execution:', result);
+
+const nounVerbResult = findNounVerb('inputDay02.txt', 19690720);
+console.log('100 * noun + verb:', nounVerbResult);
